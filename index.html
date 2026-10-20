@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>DSP 그림 요약노트</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 한 칼럼 노트. 장마다 (비유 → 그림 → 시험 포인트) 순서. 그림이 주인공. */
+:root{
+  --bg:#f2f5fb; --card:#ffffff; --ink:#1a2342; --muted:#586488; --line:#d8e0f0;
+  --accent:#2f6bed; --accent-soft:#e3ecff; --warm:#f0742a; --warm-soft:#ffeadb;
+  --good:#16966a; --good-soft:#dcf5ea; --bad:#d3405a; --grid:#e6ebf6;
+  --f-display:"Jua","Noto Sans KR",system-ui,sans-serif;
+  --f-body:"Noto Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1527; --card:#172037; --ink:#e7ecf9; --muted:#9aa8cc; --line:#2a3658;
+  --accent:#7ea5ff; --accent-soft:#1f2f58; --warm:#ff9a5c; --warm-soft:#3b2a22;
+  --good:#4bd1a0; --good-soft:#163a30; --bad:#ff7b92; --grid:#222d4b; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0e1527; --card:#172037; --ink:#e7ecf9; --muted:#9aa8cc; --line:#2a3658;
+  --accent:#7ea5ff; --accent-soft:#1f2f58; --warm:#ff9a5c; --warm-soft:#3b2a22;
+  --good:#4bd1a0; --good-soft:#163a30; --bad:#ff7b92; --grid:#222d4b; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:820px;margin:0 auto}
+header{padding:36px 0 8px}
+header h1{font-family:var(--f-display);font-weight:400;font-size:clamp(30px,6vw,44px);line-height:1.2;margin:0 0 8px;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);padding:10px 0;margin-bottom:8px;display:flex;gap:8px;overflow-x:auto;border-bottom:1px solid var(--line)}
+nav a{flex:0 0 auto;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 14px;font-size:14px;font-weight:500}
+nav a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+section{padding-top:28px}
+h2{font-family:var(--f-display);font-weight:400;font-size:clamp(26px,5vw,34px);margin:0 0 4px;text-wrap:balance}
+h3{font-size:18px;margin:28px 0 6px}
+.sub{color:var(--muted);margin:0 0 14px}
+p{margin:8px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0;min-width:0}
+figure{margin:12px 0;min-width:0}
+figcaption{font-size:14px;color:var(--muted);margin-top:6px}
+svg{display:block;width:100%;height:auto;max-width:100%;color:var(--ink)}
+svg text{fill:currentColor;font-family:var(--f-body)}
+.exam{background:var(--warm-soft);border-radius:12px;padding:12px 16px;margin:14px 0}
+.exam b.t{display:block;font-family:var(--f-display);font-weight:400;font-size:18px;color:var(--warm);margin-bottom:2px}
+.exam ul{margin:4px 0 0;padding-left:20px}
+.tip{background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin:12px 0}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+button.chip{font:inherit;font-size:14px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:3px 14px;cursor:pointer}
+button.chip[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+label.sl{display:block;font-size:14px;color:var(--muted)}
+.out{font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+.scroll{overflow-x:auto}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.big{font-family:var(--f-display);font-size:22px}
+.bars div{height:22px;border-radius:6px;margin:6px 0;color:#fff;font-size:13px;line-height:22px;padding-left:8px;white-space:nowrap}
+.pill{display:inline-block;border-radius:999px;padding:0 10px;font-size:13px;font-weight:700}
+.pill.g{background:var(--good-soft);color:var(--good)} .pill.w{background:var(--warm-soft);color:var(--warm)}
+/* svg helper classes */
+.sA{stroke:var(--accent)} .sW{stroke:var(--warm)} .sG{stroke:var(--good)} .sB{stroke:var(--bad)} .sM{stroke:var(--muted)} .sL{stroke:var(--line)} .sI{stroke:currentColor}
+.fA{fill:var(--accent)} .fW{fill:var(--warm)} .fG{fill:var(--good)} .fB{fill:var(--bad)} .fC{fill:var(--card)} .fAs{fill:var(--accent-soft)} .fWs{fill:var(--warm-soft)} .fGs{fill:var(--good-soft)} .fL{fill:var(--grid)} .fN{fill:none}
+svg text.m{fill:var(--muted)} svg text.w{fill:var(--warm)} svg text.a{fill:var(--accent)} svg text.g{fill:var(--good)} svg text.b{fill:var(--bad)}
+@media (prefers-reduced-motion:no-preference){svg *{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<header>
+  <h1>DSP 중간고사, 그림으로 이해하기</h1>
+  <p>Parker 《Digital Signal Processing 101》 1~5장과 IIR 개념. 식은 최소로, 그림과 비유로 설명해요. 슬라이더와 버튼은 직접 눌러 보세요.</p>
+</header>
+<nav aria-label="장 바로가기">
+  <a href="#ch1">1장 숫자</a><a href="#ch2">2장 복소수</a><a href="#ch3">3장 샘플링</a><a href="#ch4">4장 주파수 응답</a><a href="#ch5">5장 FIR</a><a href="#iir">IIR</a><a href="#sum">한 장 요약</a>
+</nav>
+
+<!-- ============ 1장 ============ -->
+<section id="ch1">
+<h2>1장. 숫자를 상자에 담는 법</h2>
+<p class="sub">컴퓨터는 숫자를 0과 1이 든 칸(비트)에 적어요. 칸이 8개면 256가지 숫자만 적을 수 있어요.</p>
+
+<h3>진법: 같은 숫자를 다르게 읽는 법</h3>
+<div class="card scroll">
+<table>
+<tr><th>이름</th><th>쓰는 글자</th><th>묶는 법</th><th>같은 숫자 예 (0111 1111)</th></tr>
+<tr><td>Binary 2진수</td><td>0, 1</td><td>컴퓨터가 실제로 쓰는 모양</td><td class="mono">0111 1111</td></tr>
+<tr><td>Octal 8진수</td><td>0~7</td><td>비트를 <b>3개씩</b> 묶기 (001 111 111)</td><td class="mono">177</td></tr>
+<tr><td>Decimal 10진수</td><td>0~9</td><td>우리가 평소 쓰는 숫자</td><td class="mono">127</td></tr>
+<tr><td>Hexadecimal 16진수</td><td>0~9, A~F</td><td>비트를 <b>4개씩</b> 묶기 (0111 1111 → 7, F)</td><td class="mono">0x7F</td></tr>
+</table>
+<p style="font-size:14px;color:var(--muted);margin-bottom:0">원서는 이 네 가지 이름만 나열해요. 위 표의 설명은 제가 보충했어요.</p>
+</div>
+
+<h3>음수는 "시계"로 생각하세요: 2의 보수</h3>
+<p>맨 앞 비트가 1이면 음수예요. 8비트 숫자를 256칸짜리 둥근 시계로 그리면 이래요.</p>
+<figure>
+<svg id="ring" viewBox="0 0 360 340" role="img" aria-label="8비트 2의 보수를 둥근 시계로 그린 그림. 0에서 시계 방향으로 +127까지 가고, 그다음 한 칸이 -128로 뛰어넘는다."></svg>
+<figcaption>0에서 오른쪽으로 가면 +127, 거기서 한 칸 더 가면 -128로 확 뒤집혀요(오버플로). 0 바로 왼쪽은 -1(0xFF)이에요.</figcaption>
+</figure>
+<div class="grid2">
+ <div class="card"><b>+64 + 64 = ?</b><p style="margin:2px 0 0">127을 넘어 시계 반대편으로 넘어가요. 8비트 답은 <span class="mono">1000 0000 = -128</span>. 이게 오버플로예요.</p></div>
+ <div class="card"><b>0이 하나뿐</b><p style="margin:2px 0 0">+0, -0이 따로 없어요. 덧셈기·곱셈기를 그대로 쓸 수 있는 게 장점이에요.</p></div>
+</div>
+
+<h3>16비트 표 (표 1.3): 시계가 더 커진 것뿐</h3>
+<div class="card scroll">
+<table>
+<tr><th>16진수</th><th>10진수</th><th>기억 포인트</th></tr>
+<tr><td class="mono">0x7FFF</td><td>32,767</td><td>가장 큰 양수</td></tr>
+<tr><td class="mono">0x0001</td><td>1</td><td></td></tr>
+<tr><td class="mono">0x0000</td><td>0</td><td></td></tr>
+<tr><td class="mono">0xFFFF</td><td>-1</td><td>0 바로 앞</td></tr>
+<tr><td class="mono">0xFF80</td><td>-128</td><td>0xFF7F는 -129</td></tr>
+<tr><td class="mono">0x8001</td><td>-32,767</td><td></td></tr>
+<tr><td class="mono">0x8000</td><td>-32,768</td><td>가장 작은 음수 (MSB 가중치 -2<sup>15</sup>)</td></tr>
+</table>
+<p style="font-size:14px;color:var(--muted);margin-bottom:0">원서 표는 -129, -32,767, -32,768의 16진수가 전부 0xFF80으로 잘못 인쇄돼 있어요. 위는 바로잡은 값이에요.</p>
+</div>
+<div class="tip">8비트 → 16비트로 늘릴 때는 맨 앞 비트를 왼쪽에 복사해서 붙이면 값이 안 변해요. -2는 <span class="mono">0xFE → 0xFFFE</span>.</div>
+
+<h3>소수로 쓰면 곱해도 안 넘쳐요 (Q15)</h3>
+<p>DSP는 곱셈을 엄청 많이 해요. 정수끼리 곱하면 숫자가 빠르게 커져서 상자를 넘치지만, -1~+1 사이 소수끼리 곱하면 항상 작아져요.</p>
+<div class="card">
+ <div class="bars">
+  <div style="width:75%;background:var(--accent)">0.75</div>
+  <div style="width:50%;background:var(--warm)">× 0.50</div>
+  <div style="width:37.5%;background:var(--good)">= 0.375 (작아짐, 안 넘침)</div>
+ </div>
+ <p style="margin-bottom:0">정수로 쓰면 24,576 × 16,384 = 402,653,184로 폭발해요. 8비트 소수는 정수 ÷ 128, 16비트 소수(Q15)는 정수 ÷ 32,768이에요.</p>
+</div>
+<div class="card">
+ <b>Q15 × Q15 곱셈 3단계</b>
+ <ol style="margin:4px 0 0">
+  <li>16비트 × 16비트 = 32비트가 나와요. 그런데 소수점이 한 칸 밀려서 Q31이 아니라 <b>Q30</b>이에요.</li>
+  <li>그래서 왼쪽으로 1비트 밀어요(DSP칩은 자동으로 해줘요).</li>
+  <li>위쪽 16비트만 쓰면 다시 Q15예요.</li>
+ </ol>
+ <p style="margin:6px 0 0">예: 1/2(0x4000) × 1/4(0x2000) = 0x0800 0000 → 한 칸 밀기 0x1000 0000 → 위 16비트 <b>0x1000 = 1/8</b></p>
+</div>
+
+<h3>부동소수점: 계산기의 과학 표기법</h3>
+<p>1,200,000 = 1.2 × 10<sup>6</sup>처럼 <b>숫자 부분(가수)</b>과 <b>자리 이동(지수)</b>을 따로 적어요. 아주 작은 수부터 아주 큰 수까지 다룰 수 있는 대신(다이내믹 레인지 큼), 회로가 더 복잡하고 전기도 많이 먹어요.</p>
+<div class="card scroll">
+<table>
+<tr><th>이름</th><th>전체</th><th>가수 비트</th><th>지수 비트</th></tr>
+<tr><td>Half</td><td>16비트</td><td>10 (+부호 1)</td><td>5</td></tr>
+<tr><td>Single (float)</td><td>32비트</td><td>23 (+부호 1)</td><td>8</td></tr>
+<tr><td>Double</td><td>64비트</td><td>52 (+부호 1)</td><td>11</td></tr>
+</table>
+<p style="font-size:14px;color:var(--muted);margin-bottom:0">원서가 적은 지수 바이어스(half 31, double 2047)는 표준과 달라요. 표준은 15, 127, 1023이에요. 수업 자료 기준을 따르세요.</p>
+</div>
+<div class="exam"><b class="t">시험에 이렇게 나와요</b><ul>
+<li>16비트 표: 0x7FFF = 32,767 / 0xFFFF = -1 / 0x8000 = -32,768</li>
+<li>binary, decimal, octal, hex 정의와 서로 바꾸기</li>
+<li>정수는 곱하면 커지고 소수(Q15)는 작아진다. 그래서 DSP는 소수를 쓴다</li>
+</ul></div>
+</section>
+
+<!-- ============ 2장 ============ -->
+<section id="ch2">
+<h2>2장. 복소수는 "지도 위의 점"이에요</h2>
+<p class="sub">수직선은 한 줄이라 앞뒤로만 가요. DSP는 2차원이 필요해서 동서(실수)와 남북(허수) 두 방향 지도를 써요.</p>
+
+<h3>Figure 2.1: I-Q 복소수 평면</h3>
+<figure>
+<svg id="cplane" viewBox="0 0 420 330" role="img" aria-label="가로축은 실수 I, 세로축은 허수 Q인 평면. 점 Z는 X 더하기 jY."></svg>
+<figcaption>가로 = 실수(Real, <b>I</b> 성분), 세로 = 허수(Imaginary, <b>Q</b> 성분). 점 Z = X + jY는 "동쪽으로 X, 북쪽으로 Y 간 곳"이에요. j는 "세로 방향이에요"라는 표시일 뿐이에요.</figcaption>
+</figure>
+
+<h3>2.1 더하기·빼기는 가로끼리, 세로끼리</h3>
+<div class="card">
+ <p style="margin:0"><span class="mono">(3 + j4) − (1 − j6) = 2 + j10</span>: 가로 3−1=2, 세로 4−(−6)=10.<br>
+ <span class="mono">4 · (3 + j4) = 12 + j16</span>: 둘 다 4배.</p>
+</div>
+
+<h3>2.2 곱하기: 늘이고 돌리기</h3>
+<p>식으로 하면 이렇게 나와요. 시험에 나온다고 하신 부분이에요.</p>
+<div class="card">
+ <p class="mono" style="margin:0">(A + jB)(C + jD) = (AC − BD) + j(BC + AD)</p>
+ <p style="margin:6px 0 0">외우는 법: 풀어서 곱하고, <b>j × j = −1</b>을 써서 정리해요. 예: (2+j3)(1−j2) = (2+6) + j(−4+3) = <b>8 − j</b></p>
+</div>
+<p>그림으로는 "길이는 곱하고, 각도는 더하기"예요. 그래서 j를 두 번 곱하면 90° + 90° = 180°, 즉 -1이 돼요.</p>
+<figure>
+<svg id="rot" viewBox="0 0 520 240" role="img" aria-label="단위원 위의 네 점 1, j, -1, -j. 곱하기 j는 반시계 방향으로 90도 돌기."></svg>
+<figcaption>1에 j를 곱하면 90° 돌아서 j, 한 번 더 곱하면 -1, 또 곱하면 -j, 또 곱하면 다시 1. j가 "수직 방향 표시"로 딱 맞는 이유예요.</figcaption>
+</figure>
+
+<h3>극좌표와 켤레</h3>
+<div class="grid2">
+ <div class="card"><b>극좌표</b><p style="margin:2px 0 0">"동쪽 X, 북쪽 Y" 대신 "<b>거리 R</b>, <b>각도 Ω</b>"로 같은 점을 말해요. 곱셈은 극좌표가 훨씬 쉬워요.</p></div>
+ <div class="card"><b>켤레(Z*)</b><p style="margin:2px 0 0">가로축 거울에 비친 점이에요. Z × Z* = R²(실수). 신호의 <b>세기(전력)</b>를 구할 때 써요.</p></div>
+</div>
+<figure>
+<svg id="conj" viewBox="0 0 420 260" role="img" aria-label="점 Z와 가로축 거울에 비친 점 Z*"></svg>
+<figcaption>Z와 Z*는 가로축을 사이에 둔 거울쌍이에요. 허수 부호만 바뀌어요.</figcaption>
+</figure>
+
+<h3>복소 지수: 단위원 위의 점</h3>
+<p>반지름 1짜리 원 위의 점을 <span class="mono">e<sup>jΩ</sup></span>라고 써요. 오일러 공식은 "이 점의 가로는 cos, 세로는 sin"이라는 뜻이에요.</p>
+<div class="card"><span class="mono">e<sup>jΩ</sup> = cos Ω + j sin Ω</span> &nbsp; 예: e<sup>j0</sup> = 1, e<sup>j90°</sup> = j, e<sup>jπ</sup> = −1</div>
+
+<h3>도(°)와 라디안(π) 바꾸기 (표 2.1)</h3>
+<p>라디안은 "한 바퀴 = 2π"로 재는 각도예요. 반 바퀴가 π라고 외우면 돼요.</p>
+<figure>
+<svg id="radring" viewBox="0 0 420 300" role="img" aria-label="각도 0, 45, 90, 180, 270도를 라디안으로 표시한 원"></svg>
+<figcaption>360° = 2π. 한 바퀴를 더 돌아도 같은 점이에요(540° = 180°). 시계 방향은 음수예요(270° = −90°, 3π/2 = −π/2).</figcaption>
+</figure>
+<div class="exam"><b class="t">시험에 이렇게 나와요</b><ul>
+<li>복소수 정의와 Fig. 2.1 (가로 실수, 세로 허수, Z = X + jY)</li>
+<li>덧셈은 성분별로 / 곱셈 (A+jB)(C+jD) = (AC−BD) + j(BC+AD)</li>
+<li>j² = −1, 극좌표 곱: 크기 곱하기, 각도 더하기</li>
+</ul></div>
+</section>
+
+<!-- ============ 3장 ============ -->
+<section id="ch3">
+<h2>3장. 샘플링: 번쩍이는 불빛으로 보는 세상</h2>
+<p class="sub">ADC는 신호를 "찰칵찰칵" 찍어요. 찍힌 값 하나하나가 샘플이에요. 너무 느리게 찍으면 헛갈려요.</p>
+
+<h3>바퀴 위의 점 (Fig. 3.3~3.10): 직접 돌려 보세요</h3>
+<p>스트로보 불빛이 1초에 8번 번쩍여요(Fs = 8 Hz). 바퀴가 반시계로 f Hz로 돌아요. 번쩍일 때마다 점이 어디 있는지 6번 보여 줘요.</p>
+<div class="card">
+ <div class="row" id="wbtn" role="group" aria-label="바퀴 속도 고르기"></div>
+ <label class="sl" for="wsl">바퀴 속도: <span class="out" id="wval">1</span> Hz (반시계가 +)</label>
+ <input id="wsl" type="range" min="-8" max="12" step="1" value="1">
+ <svg id="wheel" viewBox="0 0 690 130" role="img" aria-label="번쩍일 때마다 바퀴 위의 점 위치 6장면"></svg>
+ <p style="margin:6px 0 0">번쩍임 사이에 점이 돈 각도: <span class="out" id="wang"></span><br>
+ 눈에 보이는 모습: <span class="out" id="wsee"></span></p>
+</div>
+<div class="card scroll">
+<table>
+<tr><th>실제 속도</th><th>한 번 번쩍일 때 돈 각도</th><th>눈에 보이는 것</th></tr>
+<tr><td>1 Hz</td><td>π/4</td><td>천천히 반시계 (정상)</td></tr>
+<tr><td>2 Hz</td><td>π/2</td><td>반시계 (정상)</td></tr>
+<tr><td><b>4 Hz</b></td><td>π</td><td>양쪽 번갈아 → <b>방향을 모름 (Nyquist!)</b></td></tr>
+<tr><td>6 Hz</td><td>3π/2</td><td>거꾸로(시계) 도는 것처럼 보임</td></tr>
+<tr><td>7 Hz</td><td>7π/4</td><td>거꾸로, 더 느리게</td></tr>
+<tr><td><b>8 Hz</b></td><td>2π</td><td>멈춘 것처럼 보임</td></tr>
+<tr><td>9 Hz</td><td>9π/4</td><td>1 Hz와 똑같아 보임</td></tr>
+<tr><td>−1 Hz (시계 방향 1 Hz)</td><td>−π/4</td><td>7 Hz와 똑같아 보임</td></tr>
+</table>
+</div>
+<div class="tip">핵심: 번쩍이는 사이에 무슨 일이 있었는지 우리는 몰라요. 한 바퀴 돌고 "조금 더" 간 것도, 그냥 "조금 더" 간 것도 똑같이 보여요. 이 헛갈림이 <b>에일리어싱(aliasing)</b>이에요.</div>
+
+<h3>Nyquist 규칙: 신호 속도의 2배보다 빨리 찍어라</h3>
+<p>파도 모양 신호를 찍어 볼게요. 파란 선이 진짜 신호, 점이 샘플(1초에 8번), 주황 점선은 "컴퓨터가 믿어 버리는 신호"예요.</p>
+<div class="card">
+ <label class="sl" for="fsl">신호 속도: <span class="out" id="fval">1</span> Hz &nbsp; (Fs = 8 Hz, Nyquist = 4 Hz)</label>
+ <input id="fsl" type="range" min="0.5" max="8" step="0.5" value="1">
+ <svg id="wave" viewBox="0 0 640 240" role="img" aria-label="신호 속도를 바꾸면 샘플 점과 잘못 읽히는 낮은 주파수 신호가 보이는 그림"></svg>
+ <p style="margin:4px 0 0" id="wmsg"></p>
+</div>
+<div class="grid2">
+ <div class="card"><b>Nyquist 주파수</b><p style="margin:2px 0 0">= Fs ÷ 2. 신호가 이 속도를 넘으면 안 돼요.</p></div>
+ <div class="card"><b>안티에일리어싱 필터</b><p style="margin:2px 0 0">ADC 바로 앞에 아날로그 저역통과 필터를 둬서 너무 빠른 신호를 미리 걸러요.</p></div>
+</div>
+<div class="card"><b>전화기 예</b><p style="margin:2px 0 0">사람 목소리 최대 약 3600 Hz → 필터로 그 이상을 자르고 → 8000 Hz(8 kSPS)로 샘플링해요. 그래서 배경 음악이 찌그러져 들려요.</p></div>
+
+<h3>양자화: 부드러운 선을 계단으로 바꾸기</h3>
+<p>ADC는 값을 정해진 계단 높이에 맞춰 "반올림"해요. 계단 높이와의 차이가 <b>양자화 잡음</b>이에요. 비트가 많을수록 계단이 촘촘해요.</p>
+<div class="card">
+ <div class="row" id="abtn" role="group" aria-label="신호 크기 고르기"></div>
+ <label class="sl" for="bsl">ADC 비트 수: <span class="out" id="bval">8</span> 비트</label>
+ <input id="bsl" type="range" min="2" max="16" step="1" value="8">
+ <svg id="quant" viewBox="0 0 640 220" role="img" aria-label="비트 수에 따른 계단 모양 양자화 그림"></svg>
+ <p style="margin:4px 0 0" id="qmsg"></p>
+ <p style="font-size:14px;color:var(--muted);margin:2px 0 0">그림은 신호가 화면을 꽉 채우도록 확대해서 그렸어요. 그래서 작은 신호일수록 계단이 거칠어 보여요.</p>
+</div>
+<div class="card scroll">
+<table>
+<tr><th>신호 크기</th><th>8비트 오차 비율</th><th>16비트 오차 비율</th></tr>
+<tr><td>0.503</td><td>약 0.6~1.0 %</td><td>약 0.002~0.004 %</td></tr>
+<tr><td>0.0503 (1/10)</td><td>약 6.8~8.7 %</td><td>약 0.014~0.047 %</td></tr>
+<tr><td>0.00503 (1/100)</td><td>55~100 %</td><td>약 0.1~0.5 %</td></tr>
+</table>
+<p style="font-size:14px;color:var(--muted);margin-bottom:0">오차의 크기는 거의 같은데(8비트는 늘 1/128 = 0.0078125 이하), 신호가 작아질수록 비율이 커져요. 라디오에서 방송국이 멀어질수록 지지직 소리가 더 크게 들리는 것과 같아요.</p>
+</div>
+
+<h3>3.4 SNR과 dB: "비트 하나 = 6 dB"만 기억하세요</h3>
+<div class="grid2">
+ <div class="card"><b>SNR (이상적인 ADC)</b><p class="mono" style="margin:2px 0">SNR(dB) = 6.02 × 비트 수 + 1.76</p><p style="margin:0">원서는 8비트 ≈ 48 dB, 12비트 ≈ 72 dB, 16비트 ≈ 96 dB로 써요(대략 6 dB × 비트).</p></div>
+ <div class="card"><b>dB 두 가지</b><p class="mono" style="margin:2px 0">전압(진폭): 20 log(V1/V2)<br>전력: 10 log(P1/P2)</p><p style="margin:0">전압은 제곱해야 전력이라 20이 돼요.</p></div>
+</div>
+<div class="card scroll">
+<table>
+<tr><th>상황</th><th>dB</th></tr>
+<tr><td>진폭 2배 (= 디지털 값을 왼쪽으로 1비트 밀기)</td><td>+6.02 dB ("6 dB/bit")</td></tr>
+<tr><td>전력 2배</td><td>+3.01 dB</td></tr>
+<tr><td>전력이 절반 (손실)</td><td>−3.01 dB</td></tr>
+<tr><td>그대로 (이득 1, 증폭기 unity gain)</td><td>0 dB</td></tr>
+</table>
+</div>
+<div class="exam"><b class="t">시험에 이렇게 나와요</b><ul>
+<li>sampling, aliasing, Nyquist(Fs/2), quantization, quantization noise의 정의</li>
+<li>바퀴 위 점 움직임: 4 Hz에서 방향 모름, 8 Hz에서 멈춘 것처럼, 6~7 Hz에서 거꾸로, 9 Hz = 1 Hz</li>
+<li>SNR = 6.02N + 1.76, 전압 20 log, 전력 10 log, 비트 하나 = 6 dB</li>
+</ul></div>
+</section>
+
+<!-- ============ 4장 ============ -->
+<section id="ch4">
+<h2>4장. 주파수 응답: 필터는 "체"예요</h2>
+<p class="sub">필터는 신호를 주파수별로 걸러요. 어떤 주파수는 통과시키고 어떤 주파수는 막아요. 새로운 주파수를 만들지는 못하고, 크기와 위상만 바꿔요.</p>
+
+<h3>4.1 복소 지수 = 돌아가는 시곗바늘</h3>
+<p>시간이 가면 바늘이 원을 돌아요. 속도를 <b>f(초당 몇 바퀴)</b> 또는 <b>ω(초당 몇 라디안)</b>로 말해요. 둘은 단위만 다른 같은 속도예요: <b>ω = 2πf</b>. 예를 들어 8초에 한 바퀴(f = 1/8)면 ω = π/4예요.</p>
+<div class="card">
+ <label class="sl" for="tsl">시간 t: <span class="out" id="tval">1</span> 초 &nbsp;&nbsp; s(t) = e<sup>jπt/4</sup></label>
+ <input id="tsl" type="range" min="0" max="8" step="1" value="1">
+ <svg id="clock" viewBox="0 0 300 290" role="img" aria-label="1초마다 45도씩 도는 시곗바늘"></svg>
+ <p style="margin:4px 0 0">값: <span class="out" id="tv"></span> &nbsp; 각도: <span class="out" id="ta"></span></p>
+</div>
+<div class="card scroll">
+<table>
+<tr><th>t (초)</th><th>s(t)</th><th>각도(°)</th><th>각도(라디안)</th></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>1</td><td>0.707 + 0.707j</td><td>45</td><td>π/4</td></tr>
+<tr><td>2</td><td>j</td><td>90</td><td>π/2</td></tr>
+<tr><td>3</td><td>−0.707 + 0.707j</td><td>135</td><td>3π/4</td></tr>
+<tr><td>4</td><td>−1</td><td>180</td><td>π</td></tr>
+<tr><td>5</td><td>−0.707 − 0.707j</td><td>225</td><td>5π/4 = −3π/4</td></tr>
+<tr><td>6</td><td>−j</td><td>270</td><td>3π/2 = −π/2</td></tr>
+<tr><td>7</td><td>0.707 − 0.707j</td><td>315</td><td>7π/4 = −π/4</td></tr>
+<tr><td>8</td><td>1</td><td>360 = 0</td><td>2π = 0</td></tr>
+</table>
+<p style="font-size:14px;color:var(--muted);margin-bottom:0">원서 표 4.1의 t = 7 줄은 7π/8로 잘못 인쇄돼 있어요. 315° = 7π/4가 맞아요.</p>
+</div>
+
+<h3>4.2 정규화: Fs를 1로 놓고 말하기</h3>
+<p>주파수를 Fs로 나눠서 "Fs의 몇 배"로 말해요. 전화망(Fs = 8000 Hz)에서 터치톤 770 Hz를 찾는 필터 예예요.</p>
+<div class="card scroll">
+<table>
+<tr><th></th><th>실제 (Hz)</th><th>정규화 (÷ 8000)</th></tr>
+<tr><td>터치톤</td><td>770</td><td>0.09625 Fs</td></tr>
+<tr><td>통과대역 시작</td><td>760</td><td>0.0950 Fs</td></tr>
+<tr><td>통과대역 끝</td><td>780</td><td>0.0975 Fs</td></tr>
+<tr><td>Nyquist</td><td>4000</td><td>0.50 Fs</td></tr>
+</table>
+</div>
+
+<h3>4.4 필터 모양 세 가지 (Fig. 4.3~4.6)</h3>
+<p>초록색이 통과하는 곳이에요. 가운데(−Fs/2 ~ +Fs/2)만 진짜이고, 좌우 그림은 샘플링 때문에 Fs마다 똑같이 반복되는 모습이에요.</p>
+<div class="grid2">
+ <figure class="card" style="margin:0"><svg id="lp" viewBox="0 0 300 170" role="img" aria-label="저역통과 필터의 응답"></svg><figcaption><b>저역통과</b>: 0 근처(느린 변화)만 통과</figcaption></figure>
+ <figure class="card" style="margin:0"><svg id="hp" viewBox="0 0 300 170" role="img" aria-label="고역통과 필터의 응답"></svg><figcaption><b>고역통과</b>: Nyquist 근처(빠른 변화)만 통과</figcaption></figure>
+ <figure class="card" style="margin:0"><svg id="bp" viewBox="0 0 300 170" role="img" aria-label="대역통과 필터의 응답"></svg><figcaption><b>대역통과</b>: 한 구간만 통과. DC와 Nyquist는 막음</figcaption></figure>
+</div>
+<div class="tip">Fs 근처 신호는 ADC에서 0 근처로 보이니까 저역통과 필터를 그냥 통과해요. 에일리어싱이 필터에서도 똑같이 나타나는 거예요.</div>
+<p><b>선형 위상(4.5):</b> FIR 필터는 모든 주파수를 똑같은 시간만큼 늦춰요. 그래서 위상은 신경 안 써도 돼요(5장 마지막에 그림이 있어요).</p>
+
+<h3>4.6 ω 눈금자: π는 Nyquist, 2π는 Fs</h3>
+<figure>
+<svg id="ruler" viewBox="0 0 640 140" role="img" aria-label="ω 축 0, π/4, π/2, π, 2π가 각각 Fs의 0, 1/8, 1/4, 1/2, 1배에 해당함을 보여 주는 눈금자"></svg>
+<figcaption>ω = 2π · (f / Fs). 필터 프로그램은 ω로, 현실은 Hz로 말하니 둘을 오갈 수 있어야 해요.</figcaption>
+</figure>
+<div class="card scroll">
+<table>
+<tr><th>저역통과 최대 대역폭 대비</th><th>ω</th><th>f</th></tr>
+<tr><td>10 %</td><td>π/10</td><td>Fs/20</td></tr>
+<tr><td>25 %</td><td>π/4</td><td>Fs/8</td></tr>
+<tr><td>50 %</td><td>π/2</td><td>Fs/4</td></tr>
+<tr><td>80 %</td><td>4π/5</td><td>2Fs/5</td></tr>
+<tr><td>100 % (모두 통과)</td><td>π</td><td>Fs/2 = Nyquist</td></tr>
+</table>
+</div>
+<div class="exam"><b class="t">시험에 이렇게 나와요</b><ul>
+<li>복소 지수 e<sup>jωt</sup>, ω = 2πf, 표 4.1(45°씩 도는 각도 표) 채우기</li>
+<li>정규화: 770 / 8000 = 0.09625 Fs 같은 계산</li>
+<li>ω = π ↔ Nyquist, 2π ↔ Fs. 저역·고역·대역통과 그림 구분</li>
+</ul></div>
+</section>
+
+<!-- ============ 5장 ============ -->
+<section id="ch5">
+<h2>5장. FIR 필터: 이동하는 가중 평균 <span class="pill w">가장 중요</span></h2>
+<p class="sub">FIR = Finite Impulse Response. "톡 한 번 치면 응답이 유한하게 끝나는" 필터예요. 곱셈기, 덧셈기, 한 박자 기억(지연 z<sup>−1</sup>)으로 만들어요.</p>
+
+<h3>5.1 구조: 줄 선 숫자들에 점수를 곱해서 더하기</h3>
+<p>최근 입력 5개에 각각 점수(계수 C)를 곱해서 전부 더하면 출력 하나가 나와요. 다음 박자에는 한 칸 밀어서 또 해요. 이걸 <b>컨볼루션</b>(내적을 한 칸씩 밀기)이라고 해요.</p>
+<figure>
+<svg id="firstruct" viewBox="0 0 640 210" role="img" aria-label="5탭 FIR 구조. 입력이 지연 소자를 지나며 각 계수 C0에서 C4와 곱해지고 합쳐져 출력이 된다."></svg>
+<figcaption>x가 오른쪽으로 한 칸씩 밀려가고(z<sup>−1</sup> = 한 박자 기억), 각 칸에서 C를 곱한 뒤 전부 더하면 y예요. 탭(tap) 수 = 곱셈기 수 = 5.</figcaption>
+</figure>
+
+<h3>컨볼루션 계산: 직접 밀어 보세요</h3>
+<p>계수 C = {1, 3, 5, 3, 1}, 입력 x = {−1, 1, 2, 1, 4, −1}(그 밖에는 0). 슬라이더로 k를 옮기면 각 칸에서 x에 C를 곱해 더해요.</p>
+<div class="card">
+ <div class="row" role="group" aria-label="입력 고르기">
+  <button class="chip" id="inEx" aria-pressed="true">예제 입력</button>
+  <button class="chip" id="inImp" aria-pressed="false">톡 한 번만 (임펄스)</button>
+ </div>
+ <label class="sl" for="ksl">출력 위치 k = <span class="out" id="kval">4</span></label>
+ <input id="ksl" type="range" min="-1" max="10" step="1" value="4">
+ <svg id="conv" viewBox="0 0 640 250" role="img" aria-label="입력 줄 위로 계수 창이 미끄러지며 곱한 값과 합이 계산되는 그림"></svg>
+ <p style="margin:4px 0 0"><span id="csum" class="out"></span></p>
+ <svg id="outbars" viewBox="0 0 640 150" role="img" aria-label="지금까지 계산된 출력 y의 막대그래프"></svg>
+</div>
+<div class="grid2">
+ <div class="card"><b>임펄스 응답</b><p style="margin:2px 0 0">입력이 "1이 딱 한 번"이면 출력은 계수 그대로 {1, 3, 5, 3, 1}이에요. 위에서 "톡 한 번만"을 눌러 보세요. 이 출력이 <b>임펄스 응답</b>이고, 길이가 유한해서 <b>F</b>IR이에요.</p></div>
+ <div class="card"><b>출력 길이</b><p style="margin:2px 0 0">입력 6개, 필터 5탭이면 0이 아닌 출력은 6+5−1 = 10개(k = 0~9)예요. 예제 답: −1, −2, 0, 9, 19, 23, 22, 8, 1, −1.</p></div>
+</div>
+
+<h3>5.2 이 필터는 무엇을 통과시킬까? (주파수 응답)</h3>
+<p>생각하기 쉬운 두 가지부터 볼게요.</p>
+<ul>
+ <li><b>이동평균</b>(계수가 전부 1): 이웃을 평균 내니까 빨리 흔들리는 건 사라지고 천천히 변하는 것만 남아요 → <b>저역통과</b></li>
+ <li><b>+1, −1, +1, −1…</b>: 천천히 변하는 신호는 이웃끼리 같아서 서로 지워지고, 번갈아 크게 바뀌는 신호는 오히려 커져요 → <b>고역통과</b></li>
+</ul>
+<p>계수가 주어졌을 때 주파수 ω에서의 이득(몇 배로 키우나)은 이 식 하나로 나와요.</p>
+<div class="card"><p class="mono" style="margin:0">H(ω) = C0 + C1·e<sup>−jω</sup> + C2·e<sup>−j2ω</sup> + …</p>
+<p style="margin:4px 0 0">크게 나오면 통과, 0에 가까우면 차단이에요. 5탭 예제 C = {1,3,5,3,1}로 두 점만 계산해 보면 필터 종류를 알 수 있어요.</p></div>
+<div class="grid2">
+ <div class="card"><b>ω = 0 (DC)</b><p style="margin:2px 0 0">e⁰ = 1이라 그냥 다 더해요: 1+3+5+3+1 = <b>13</b></p></div>
+ <div class="card"><b>ω = π/2</b><p style="margin:2px 0 0">1·1 + 3·(−j) + 5·(−1) + 3·(j) + 1·1 = <b>−3</b> → 크기 <b>3</b> (j끼리 지워져요)</p></div>
+</div>
+<p>13 → 3으로 줄었으니 저역통과예요. 줄어든 정도는 dB로 20·log(3/13) = <b>−12.7 dB</b>.</p>
+<figure>
+<div class="grid2" id="hplots"></div>
+<figcaption>계수 모양별 응답 (가로: ω = 0 ~ π, 세로: 크기). 예제 필터는 13에서 시작해 π/2에서 3, π에서 1이에요.</figcaption>
+</figure>
+
+<h3>5.3 계수 설계: 원하는 모양에서 거꾸로 계수 만들기</h3>
+<p>"이런 응답이 나오게 해 주세요"(D(ω))라는 주문에서 계수를 구해요. 실제 응답 H(ω)와의 오차를 제곱해서 전부 더한 값이 가장 작아지게 만들면 계수가 나와요(푸리에 설계법).</p>
+<div class="card"><p class="mono" style="margin:0">C<sub>i</sub> = (1/2π) ∫ D(ω) e<sup>jωi</sup> dω</p>
+<p style="margin:4px 0 0">이상적인 저역통과(컷오프 π/2)로 계산하면 계수가 <b>sin(πi/2) / (πi)</b> 모양이 돼요. 이걸 <b>sinc 함수</b>(sin x / x)라고 해요. 한 칸 건너 0이고 가운데에서 멀수록 작아져요.</p></div>
+<figure>
+<svg id="sinc" viewBox="0 0 640 200" role="img" aria-label="이상적인 저역통과 필터 계수 sinc 모양 막대그래프"></svg>
+<figcaption>계수 막대: 가운데(C₀ = 1/2)가 가장 크고, 좌우로 갈수록 작아지며 부호가 바뀌어요. 짝수 번째는 0이에요.</figcaption>
+</figure>
+<div class="tip">문제: 이상적인 모양은 계수가 <b>무한히</b> 필요해요. 실제로는 잘라서 쓰니까 모양이 무너져요. 그래서 "품질 vs 탭 수(곱셈기 수)"를 맞바꿔야 해요.</div>
+
+<h3>5.4 탭 수 효과: 많을수록 칼같아져요</h3>
+<p>같은 저역통과(컷오프 π/2)를 7, 15, 63, 255탭으로 만든 응답이에요(세로는 dB, 아래로 갈수록 더 많이 막음). 켜고 꺼서 비교해 보세요.</p>
+<div class="card">
+ <div class="row" id="tapbtn" role="group" aria-label="탭 수 켜고 끄기"></div>
+ <svg id="taps" viewBox="0 0 640 300" role="img" aria-label="탭 수에 따른 저역통과 필터 응답 비교 그래프"></svg>
+</div>
+<p>탭이 늘수록 통과 → 차단 경계가 가팔라지고, 경계에서 먼 차단 구간이 더 깊게 내려가요. 원서 그림에서는 255탭이 약 −42 dB, 1023탭이 약 −54 dB(차이 12 dB = 진폭 약 4배 더 작게)예요.</p>
+<p style="font-size:14px;color:var(--muted)">경계 바로 옆의 출렁임은 이렇게 그냥 자르면 안 줄어요. 다음 장 Windowing이 그걸 줄이는 방법이에요.</p>
+
+<h3>지연과 선형 위상: 모두 같은 시간만큼 늦게</h3>
+<p>FIR의 임펄스 응답에서 가장 큰 값(가운데 탭)이 나오는 위치가 지연이에요. 5탭 예제는 {1,3,5,3,1}의 5가 세 번째니까 <b>3샘플</b> 지연이에요. 원서 식: N탭이 홀수면 N/2+1(소수점 버림), 짝수면 N/2+1/2이고, 둘 다 (N+1)/2로 같아요.</p>
+<figure>
+<svg id="runners" viewBox="0 0 640 230" role="img" aria-label="선형 위상은 모든 주파수가 같은 시간만큼 늦어 모양이 유지되고, 비선형 위상은 늦는 시간이 달라 모양이 흐트러진다는 비유 그림"></svg>
+<figcaption>달리기 대열 비유예요. 모두 똑같이 2초 늦게 출발하면 대열 모양이 그대로(<b>선형 위상, FIR</b>). 사람마다 늦는 시간이 다르면 대열이 흐트러져요(위상 왜곡, IIR).</figcaption>
+</figure>
+<div class="tip">계수 번호를 C₀~C₄로 매기든 C₋₂~C₂로 매기든 주파수 응답의 <b>크기</b>는 같아요. 번호를 옮기는 건 그냥 지연이고, 지연은 위상만 바꾸기 때문이에요.</div>
+
+<div class="exam"><b class="t">시험에 이렇게 나와요 (5장)</b><ul>
+<li>y<sub>k</sub> = Σ C<sub>i</sub> x<sub>k−i</sub> 로 컨볼루션 직접 계산 (칸마다 곱하고 더하고, 풀이 과정까지 쓰기)</li>
+<li>임펄스 응답 = 계수. FIR 이름의 이유(유한한 길이)</li>
+<li>H(ω) = Σ C e<sup>−jωi</sup> 계산: H(0) = 13, H(π/2) = −3(크기 3), 20 log(3/13) = −12.7 dB</li>
+<li>계수 설계 → sinc, 탭이 많을수록 가파르고 차단 깊음(대신 곱셈기 많이)</li>
+<li>선형 위상: 모든 주파수에 같은 지연, 위상 왜곡 없음. 5탭이면 지연 3샘플</li>
+</ul></div>
+</section>
+
+<!-- ============ IIR ============ -->
+<section id="iir">
+<h2>IIR 필터: FIR에 "메아리"를 더한 것 <span class="pill w">개념 중요</span></h2>
+<p class="sub">원서에서는 8장이에요. IIR = Infinite Impulse Response. 출력을 다시 입력 쪽으로 되돌려 보내요(피드백).</p>
+<figure>
+<svg id="iirstruct" viewBox="0 0 640 330" role="img" aria-label="위는 피드백이 없는 FIR 구조, 아래는 출력이 되돌아오는 피드백이 있는 IIR 구조"></svg>
+<figcaption>위: FIR은 입력만 보고 계산해요. 아래: IIR은 <b>자기 출력(y)도 다시 곱해서 더해요</b>(빨간 화살표). 산에서 "야호" 했을 때 메아리가 몇 번 울리고 사라지면 FIR, 메아리가 계속 되돌아오면 IIR이에요.</figcaption>
+</figure>
+<div class="card scroll">
+<table>
+<tr><th></th><th>FIR</th><th>IIR</th></tr>
+<tr><td>위상</td><td>선형 위상 (왜곡 없음)</td><td>항상 위상 왜곡이 생김</td></tr>
+<tr><td>안정성</td><td>항상 안정</td><td>잘못하면 불안정 (출력이 계속 커짐)</td></tr>
+<tr><td>임펄스 응답</td><td>유한 길이</td><td>보통 무한 길이</td></tr>
+<tr><td>양자화·계수 민감도</td><td>작게 설계 가능</td><td>계수·정밀도에 아주 민감, 오버플로 쉬움</td></tr>
+<tr><td>급한 차단(날카로운 경계)</td><td>탭(곱셈기)이 많이 필요</td><td>같은 자원이면 훨씬 급하게 가능</td></tr>
+<tr><td>멀티레이트(decimation 등)</td><td>효율적</td><td></td></tr>
+<tr><td>아날로그 필터 대체</td><td></td><td>자연스럽고, 아날로그 특성을 보존</td></tr>
+<tr><td>실제 사용</td><td>가장 많이 씀</td><td>덜 씀</td></tr>
+</table>
+</div>
+<div class="grid2">
+ <div class="card"><b>영점(zero)</b><p style="margin:2px 0 0">특정 주파수를 상쇄해서 없애요. (+1, −1, +1, −1 필터가 하는 일)</p></div>
+ <div class="card"><b>극점(pole)</b><p style="margin:2px 0 0">피드백 때문에 특정 주파수에서 "아주 작은 수로 나누는" 효과가 나서 그 주변이 크게 솟아요.</p></div>
+</div>
+<div class="tip">로프 비유: 주파수 응답을 로프라고 하면 극점은 로프를 위로 들어 올리는 손, 영점은 땅에 누르는 납추예요. 둘을 같이 쓰니 응답을 더 급하게 꺾을 수 있지만, 손이 너무 세면(극점이 큼) 불안정해져요.</div>
+<div class="exam"><b class="t">시험에 이렇게 나와요</b><ul>
+<li>IIR = FIR + 피드백 (구조 그림, y = C·x − D·y 모양)</li>
+<li>FIR vs IIR 비교: 위상, 안정성, 임펄스 응답 길이, 필요한 곱셈기 수</li>
+<li>왜 IIR을 쓰나: 적은 자원으로 급한 차단, 아날로그 필터(예: 오디오 장비) 대체</li>
+</ul></div>
+<p style="font-size:14px;color:var(--muted)">아날로그를 디지털 IIR로 옮기는 방법은 쌍선형 변환(bilinear transform)을 쓰고, 이때 생기는 주파수 찌그러짐을 미리 보정하는 것이 프리워핑이에요. 예: Fs = 1000 Hz에서 3 dB 점 100 Hz → 103.4 Hz로 미리 설계, 250 Hz → 318.3 Hz. 사용자 지정 시험 범위에 들어 있는지는 확인하세요.</p>
+</section>
+
+<!-- ============ 요약 ============ -->
+<section id="sum">
+<h2>시험 직전 한 장 요약</h2>
+<div class="grid2">
+ <div class="card"><b>1장</b><br>8비트 −128~127, 16비트 −32,768~32,767<br>0xFFFF = −1, 0x8000 = −32,768<br>소수 Q15 = 정수 ÷ 32,768<br>Q15×Q15 → Q30 → 한 칸 왼쪽 밀기</div>
+ <div class="card"><b>2장</b><br>j² = −1<br>(A+jB)(C+jD) = (AC−BD) + j(BC+AD)<br>극좌표 곱: 크기 곱, 각도 합<br>Z·Z* = R², e<sup>jΩ</sup> = cosΩ + j sinΩ</div>
+ <div class="card"><b>3장</b><br>Nyquist = Fs ÷ 2<br>4 Hz(Fs 8)에서 방향 모름, 8 Hz에서 정지<br>SNR = 6.02N + 1.76 (비트당 6 dB)<br>전압 20 log, 전력 10 log</div>
+ <div class="card"><b>4장</b><br>ω = 2πf, ω = π ↔ Nyquist, 2π ↔ Fs<br>770/8000 = 0.09625 Fs<br>표 4.1: 45°씩, t = 8이면 한 바퀴<br>FIR = 선형 위상</div>
+ <div class="card"><b>5장</b><br>y<sub>k</sub> = Σ C<sub>i</sub> x<sub>k−i</sub>, 임펄스 응답 = 계수<br>H(0) = 13, |H(π/2)| = 3 → −12.7 dB<br>탭 ↑ = 가파름 ↑, 곱셈기 ↑<br>5탭 지연 = 3샘플</div>
+ <div class="card"><b>IIR</b><br>FIR + 피드백, 극점 + 영점<br>급한 응답을 적은 자원으로<br>대신 위상 왜곡·불안정·민감함</div>
+</div>
+<p style="font-size:14px;color:var(--muted)">원서에 오탈자가 몇 군데 있어요(1장 표 1.3의 16진수, 4장 표 4.1의 7π/8, 5장 sinc 식의 2π 등). 교수님 자료와 다르면 수업 자료를 기준으로 하세요.</p>
+</section>
+</div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+function E(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in (attrs||{}))e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;if(parent)parent.appendChild(e);return e;}
+function clear(s){while(s.firstChild)s.removeChild(s.firstChild);}
+function arrowDefs(s,id,cls){const d=E('defs',{},s);const m=E('marker',{id:id,viewBox:'0 0 10 10',refX:'8',refY:'5',markerWidth:'7',markerHeight:'7',orient:'auto-start-reverse'},d);E('path',{d:'M0 0 L10 5 L0 10 z',class:cls},m);}
+const f2=x=>x.toFixed(1);
+
+/* ---------- 1장: 2의 보수 시계 ---------- */
+(function(){
+  const s=$('#ring'),cx=180,cy=165,r=100;
+  const pt=(v,rr)=>{const th=v/256*2*Math.PI;return[cx+(rr||r)*Math.sin(th),cy-(rr||r)*Math.cos(th)];};
+  function path(a,b){let d='';for(let v=a;v<=b;v++){const p=pt(v);d+=(v===a?'M':' L')+f2(p[0])+' '+f2(p[1]);}return d;}
+  E('path',{d:path(0,127),class:'fN sA','stroke-width':16,'stroke-linecap':'butt'},s);
+  E('path',{d:path(-128,-1),class:'fN sW','stroke-width':16},s);
+  E('text',{x:cx,y:cy-6,'text-anchor':'middle','font-size':16,'font-weight':700},s,'8비트 = 256칸');
+  E('text',{x:cx,y:cy+16,'text-anchor':'middle','font-size':13,class:'m'},s,'시계 한 바퀴');
+  E('text',{x:cx+16,y:cy-r-26,'text-anchor':'start','font-size':13,class:'a'},s,'0 (0x00)');
+  E('text',{x:cx-16,y:cy-r-26,'text-anchor':'end','font-size':13,class:'w'},s,'−1 (0xFF)');
+  const p64=pt(64,r+30),m64=pt(-64,r+30);
+  E('text',{x:p64[0],y:p64[1]+4,'text-anchor':'start','font-size':13,class:'a'},s,'+64');
+  E('text',{x:m64[0],y:m64[1]+4,'text-anchor':'end','font-size':13,class:'w'},s,'−64');
+  E('line',{x1:cx,y1:cy+r-14,x2:cx,y2:cy+r+14,class:'sB','stroke-width':3},s);
+  E('text',{x:cx+14,y:cy+r+30,'text-anchor':'start','font-size':13,class:'a'},s,'+127 (0x7F)');
+  E('text',{x:cx-14,y:cy+r+30,'text-anchor':'end','font-size':13,class:'w'},s,'−128 (0x80)');
+  E('text',{x:cx,y:cy+r+56,'text-anchor':'middle','font-size':13,class:'b','font-weight':700},s,'여기서 +1 하면 뒤집힘 (오버플로)');
+  E('text',{x:cx,y:cy+r+76,'text-anchor':'middle','font-size':12,class:'m'},s,'파랑 = 양수 (맨 앞 비트 0) · 주황 = 음수 (맨 앞 비트 1)');
+})();
+
+/* ---------- 2장 ---------- */
+(function(){
+  let s=$('#cplane');arrowDefs(s,'ar1','fI');
+  const cx=130,cy=170;
+  for(let i=-1;i<=3;i++){E('line',{x1:cx+i*80,y1:30,x2:cx+i*80,y2:300,class:'sL'},s);}
+  for(let i=-2;i<=1;i++){E('line',{x1:20,y1:cy+i*80,x2:400,y2:cy+i*80,class:'sL'},s);}
+  E('line',{x1:20,y1:cy,x2:405,y2:cy,class:'sI','stroke-width':1.6,'marker-end':'url(#ar1)'},s);
+  E('line',{x1:cx,y1:310,x2:cx,y2:22,class:'sI','stroke-width':1.6,'marker-end':'url(#ar1)'},s);
+  E('text',{x:400,y:cy+20,'text-anchor':'end','font-size':13},s,'실수 (Real, I)');
+  E('text',{x:cx+8,y:30,'font-size':13},s,'허수 (Imag, Q)');
+  const zx=cx+2.4*80*0.8,zy=cy-1.2*80*0.9;
+  E('line',{x1:cx,y1:cy,x2:zx,y2:zy,class:'sA','stroke-width':3},s);
+  E('line',{x1:zx,y1:zy,x2:zx,y2:cy,class:'sM','stroke-dasharray':'4 4'},s);
+  E('line',{x1:cx,y1:zy,x2:zx,y2:zy,class:'sM','stroke-dasharray':'4 4'},s);
+  E('circle',{cx:zx,cy:zy,r:7,class:'fA'},s);
+  E('text',{x:zx+10,y:zy-8,'font-size':15,'font-weight':700,class:'a'},s,'Z = X + jY');
+  E('text',{x:zx,y:cy+18,'text-anchor':'middle','font-size':13},s,'X');
+  E('text',{x:cx-8,y:zy+4,'text-anchor':'end','font-size':13},s,'Y');
+  E('text',{x:cx-8,y:cy+16,'text-anchor':'end','font-size':12,class:'m'},s,'0');
+
+  s=$('#rot');arrowDefs(s,'ar2','fW');
+  const c2x=260,c2y=120,R=80;
+  E('circle',{cx:c2x,cy:c2y,r:R,class:'fN sM','stroke-dasharray':'4 4'},s);
+  const pts=[['1',0,'0°'],['j',90,'90°'],['−1',180,'180°'],['−j',270,'270°']];
+  pts.forEach(p=>{const a=p[1]*Math.PI/180,x=c2x+R*Math.cos(a),y=c2y-R*Math.sin(a);
+    E('circle',{cx:x,cy:y,r:7,class:'fA'},s);
+    const dx=Math.cos(a)*24,dy=-Math.sin(a)*24;
+    E('text',{x:x+dx+(p[1]===90||p[1]===270?0:0),y:y+dy+5,'text-anchor':'middle','font-size':16,'font-weight':700,class:'a'},s,p[0]);});
+  E('line',{x1:c2x-R-30,y1:c2y,x2:c2x+R+30,y2:c2y,class:'sL'},s);
+  E('line',{x1:c2x,y1:c2y-R-30,x2:c2x,y2:c2y+R+30,class:'sL'},s);
+  for(let i=0;i<4;i++){const a0=(i*90+14)*Math.PI/180,a1=(i*90+76)*Math.PI/180,rr=R+0;
+    const rm=R-22;
+    E('path',{d:`M${f2(c2x+rm*Math.cos(a0))} ${f2(c2y-rm*Math.sin(a0))} A${rm} ${rm} 0 0 0 ${f2(c2x+rm*Math.cos(a1))} ${f2(c2y-rm*Math.sin(a1))}`,class:'fN sW','stroke-width':3,'marker-end':'url(#ar2)'},s);
+    const am=(i*90+45)*Math.PI/180;
+    E('text',{x:c2x+(rm-18)*Math.cos(am),y:c2y-(rm-18)*Math.sin(am)+4,'text-anchor':'middle','font-size':12,class:'w','font-weight':700},s,'×j');}
+  E('text',{x:20,y:40,'font-size':14},s,'×j = 반시계로 90° 돌기');
+  E('text',{x:20,y:62,'font-size':14,class:'m'},s,'j × j = 180° 돌기 = −1');
+  E('text',{x:20,y:84,'font-size':14,class:'m'},s,'네 번 곱하면 제자리(1)');
+
+  s=$('#conj');const cx3=110,cy3=130;
+  E('line',{x1:20,y1:cy3,x2:400,y2:cy3,class:'sI','stroke-width':1.6},s);
+  E('line',{x1:cx3,y1:12,x2:cx3,y2:250,class:'sL'},s);
+  const zx3=cx3+200,zy3=cy3-80;
+  E('line',{x1:cx3,y1:cy3,x2:zx3,y2:zy3,class:'sA','stroke-width':3},s);
+  E('line',{x1:cx3,y1:cy3,x2:zx3,y2:cy3*2-zy3,class:'sW','stroke-width':3},s);
+  E('line',{x1:zx3,y1:zy3,x2:zx3,y2:cy3*2-zy3,class:'sM','stroke-dasharray':'5 4'},s);
+  E('circle',{cx:zx3,cy:zy3,r:7,class:'fA'},s);E('circle',{cx:zx3,cy:cy3*2-zy3,r:7,class:'fW'},s);
+  E('text',{x:zx3+12,y:zy3+5,'font-size':15,'font-weight':700,class:'a'},s,'Z = X + jY');
+  E('text',{x:zx3+12,y:cy3*2-zy3+5,'font-size':15,'font-weight':700,class:'w'},s,'Z* = X − jY');
+  E('text',{x:cx3+80,y:cy3-6,'font-size':12,class:'m'},s,'거울 (가로축)');
+  E('text',{x:20,y:245,'font-size':13},s,'Z × Z* = R² (실수! 길이의 제곱)');
+
+  s=$('#radring');const cx4=210,cy4=150,r4=100;
+  E('circle',{cx:cx4,cy:cy4,r:r4,class:'fN sM'},s);
+  const ang=[[0,'0° = 0'],[45,'45° = π/4'],[90,'90° = π/2'],[180,'180° = π'],[270,'270° = 3π/2 (= −π/2)']];
+  ang.forEach(p=>{const a=p[0]*Math.PI/180,x=cx4+r4*Math.cos(a),y=cy4-r4*Math.sin(a);
+    E('line',{x1:cx4,y1:cy4,x2:x,y2:y,class:'sL'},s);E('circle',{cx:x,cy:y,r:6,class:'fW'},s);
+    const right=Math.cos(a)>0.1,left=Math.cos(a)<-0.1;
+    E('text',{x:x+(right?12:left?-12:0),y:y+(right||left?5:(Math.sin(a)>0?-12:22)),'text-anchor':right?'start':left?'end':'middle','font-size':13,class:p[0]===45?'w':''},s,p[1]);});
+  E('path',{d:`M${cx4+34} ${cy4} A34 34 0 1 0 ${cx4+34} ${cy4+0.1}`,class:'fN sA','stroke-width':2},s);
+  E('text',{x:cx4,y:cy4+4,'text-anchor':'middle','font-size':12,class:'m'},s,'한 바퀴 = 2π');
+})();
+document.querySelectorAll('.fI').forEach(e=>{});
+
+/* ---------- 3장: 바퀴 ---------- */
+(function(){
+  const s=$('#wheel'),sl=$('#wsl'),btn=$('#wbtn');
+  const presets=[1,2,4,6,7,8,9,-1];
+  const gcd=(a,b)=>b?gcd(b,a%b):a;
+  function frac(f){if(f===0)return '0';const g=gcd(Math.abs(f),4),n=f/g,d=4/g;const top=n===1?'π':n===-1?'−π':(n<0?'−'+(-n)+'π':n+'π');return d===1?top:top+'/'+d;}
+  let cur=1;
+  function draw(f){
+    cur=f;clear(s);const step=2*Math.PI*f/8;
+    for(let n=0;n<6;n++){const cx=58+n*115,cy=62,R=42;
+      E('circle',{cx,cy,r:R,class:'fAs sM'},s);
+      const th=n*step,x=cx+R*0.82*Math.cos(th),y=cy-R*0.82*Math.sin(th);
+      E('line',{x1:cx,y1:cy,x2:cx+R,y2:cy,class:'sL'},s);
+      E('circle',{cx:x,cy:y,r:7,class:'fB'},s);
+      E('text',{x:cx,y:cy+R+20,'text-anchor':'middle','font-size':12,class:'m'},s,'번쩍 '+(n+1));}
+    $('#wval').textContent=f;
+    $('#wang').textContent=frac(f)+' 라디안 ('+(f*45)+'°)';
+    const a=((f%8)+8)%8;let msg;
+    if(a===0)msg='멈춘 것처럼 보임 (사실은 돌고 있어요)';
+    else if(a===4)msg='양쪽을 번갈아 보임 → 방향을 알 수 없음 (Nyquist)';
+    else if(a<4)msg=(f===a?'그대로 ':'실제와 달리 ')+'반시계 '+a+' Hz로 도는 것처럼 보임';
+    else msg='거꾸로(시계 방향) '+(8-a)+' Hz로 도는 것처럼 보임';
+    $('#wsee').textContent=msg;
+    sl.value=f;
+    btn.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.f===f)));
+  }
+  presets.forEach(p=>{const b=document.createElement('button');b.className='chip';b.dataset.f=p;b.textContent=(p>0?'':'')+p+' Hz';b.setAttribute('aria-pressed','false');b.onclick=()=>draw(p);btn.appendChild(b);});
+  sl.oninput=()=>draw(+sl.value);draw(1);
+})();
+
+/* ---------- 3장: 샘플링 파형 ---------- */
+(function(){
+  const s=$('#wave'),sl=$('#fsl');
+  function draw(){
+    const f=+sl.value;clear(s);$('#fval').textContent=f;
+    const X=t=>20+t/2*600,Y=v=>120-v*85;
+    E('line',{x1:20,y1:120,x2:620,y2:120,class:'sL'},s);
+    for(let t=0;t<=2;t+=0.5)E('text',{x:X(t),y:232,'text-anchor':'middle','font-size':11,class:'m'},s,t+'초');
+    let d='';for(let i=0;i<=600;i++){const t=i/300;d+=(i?' L':'M')+f2(X(t))+' '+f2(Y(Math.sin(2*Math.PI*f*t)));}
+    const fa=f-8*Math.round(f/8);
+    if(f>4&&f<8){let d2='';for(let i=0;i<=600;i++){const t=i/300;d2+=(i?' L':'M')+f2(X(t))+' '+f2(Y(Math.sin(2*Math.PI*fa*t)));}
+      E('path',{d:d2,class:'fN sW','stroke-width':3,'stroke-dasharray':'7 5'},s);}
+    E('path',{d:d,class:'fN sA','stroke-width':2},s);
+    let d3='';for(let n=0;n<=16;n++){const t=n/8;d3+=(n?' L':'M')+f2(X(t))+' '+f2(Y(Math.sin(2*Math.PI*f*t)));}
+    E('path',{d:d3,class:'fN sM','stroke-width':1.2},s);
+    for(let n=0;n<=16;n++){const t=n/8;E('line',{x1:X(t),y1:120,x2:X(t),y2:Y(Math.sin(2*Math.PI*f*t)),class:'sM','stroke-width':1},s);
+      E('circle',{cx:X(t),cy:Y(Math.sin(2*Math.PI*f*t)),r:4.5,class:'fB'},s);}
+    let msg;
+    if(f<4)msg='<b>안전.</b> 한 주기에 샘플이 '+(8/f).toFixed(1)+'개라 모양이 잘 살아 있어요.';
+    else if(f===4)msg='<b>경계(Nyquist).</b> 한 주기에 샘플이 2개뿐이라, 하필 0만 찍히면 신호가 없는 것처럼 보여요.';
+    else if(f<8)msg='<b>에일리어싱!</b> 실제는 '+f+' Hz인데 샘플만 이으면 '+Math.abs(fa)+' Hz'+(fa<0?'(거꾸로)':'')+'인 느린 신호로 보여요(주황 점선).';
+    else msg='<b>Fs와 같은 속도.</b> 샘플이 전부 같은 값이라 신호가 멈춘(0 Hz) 것처럼 보여요.';
+    $('#wmsg').innerHTML=msg+' <span class="mono" style="color:var(--muted)">(파랑=진짜 신호, 빨강 점=샘플)</span>';
+  }
+  sl.oninput=draw;draw();
+})();
+
+/* ---------- 3장: 양자화 ---------- */
+(function(){
+  const s=$('#quant'),sl=$('#bsl'),bb=$('#abtn');let amp=0.5;
+  const amps=[0.5,0.05,0.005];
+  function draw(){
+    const bits=+sl.value;clear(s);$('#bval').textContent=bits;
+    const step=2/Math.pow(2,bits),zoom=90/amp;
+    const X=t=>20+t/2*600,Y=v=>110-v*zoom;
+    E('line',{x1:20,y1:110,x2:620,y2:110,class:'sL'},s);
+    let d='',q='';const N=600;
+    for(let i=0;i<=N;i++){const t=i/300,v=amp*Math.sin(2*Math.PI*t);
+      let qv=Math.round(v/step)*step;
+      d+=(i?' L':'M')+f2(X(t))+' '+f2(Y(v));q+=(i?' L':'M')+f2(X(t))+' '+f2(Y(qv));}
+    E('path',{d:q,class:'fN sW','stroke-width':2.5},s);
+    E('path',{d:d,class:'fN sA','stroke-width':1.5,'stroke-dasharray':'4 3'},s);
+    E('text',{x:24,y:16,'font-size':12,class:'a'},s,'파랑 점선: 진짜 신호');
+    E('text',{x:24,y:34,'font-size':12,class:'w'},s,'주황 계단: ADC가 읽은 값');
+    const pct=step/amp*100;
+    const stepTxt=bits<=15?'1/'+Math.pow(2,bits-1):'1/'+Math.pow(2,bits-1);
+    $('#qmsg').innerHTML='계단 한 칸 = <b>'+stepTxt+'</b> (≈ '+step.toPrecision(3)+'). 이 신호(크기 '+amp+')에서는 한 칸이 신호의 <b>'+(pct<0.01?pct.toExponential(1):pct<10?pct.toFixed(2):pct.toFixed(0))+'%</b>예요. 이상적 SNR ≈ <b>'+(6.02*bits+1.76).toFixed(1)+' dB</b>.';
+  }
+  amps.forEach(a=>{const b=document.createElement('button');b.className='chip';b.textContent='신호 크기 '+a;b.setAttribute('aria-pressed',String(a===amp));b.onclick=()=>{amp=a;bb.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');draw();};bb.appendChild(b);});
+  sl.oninput=draw;draw();
+})();
+
+/* ---------- 4장 ---------- */
+(function(){
+  const s=$('#clock'),sl=$('#tsl');
+  const vals=['1','0.707 + 0.707j','j','−0.707 + 0.707j','−1','−0.707 − 0.707j','−j','0.707 − 0.707j','1'];
+  const rad=['0','π/4','π/2','3π/4','π','5π/4','3π/2','7π/4','2π'];
+  function draw(){
+    const t=+sl.value;clear(s);$('#tval').textContent=t;
+    const cx=150,cy=140,R=100;
+    E('circle',{cx,cy,r:R,class:'fAs sM'},s);
+    E('line',{x1:cx-R-14,y1:cy,x2:cx+R+14,y2:cy,class:'sL'},s);E('line',{x1:cx,y1:cy-R-14,x2:cx,y2:cy+R+14,class:'sL'},s);
+    for(let k=0;k<8;k++){const a=k*Math.PI/4,x=cx+R*Math.cos(a),y=cy-R*Math.sin(a);
+      E('circle',{cx:x,cy:y,r:4,class:'fM',style:'fill:var(--muted)'},s);
+      E('text',{x:cx+(R+18)*Math.cos(a),y:cy-(R+18)*Math.sin(a)+4,'text-anchor':'middle','font-size':12,class:'m'},s,'t='+k);}
+    const a=t*Math.PI/4,x=cx+R*Math.cos(a),y=cy-R*Math.sin(a);
+    E('line',{x1:cx,y1:cy,x2:x,y2:y,class:'sW','stroke-width':4},s);
+    E('circle',{cx:x,cy:y,r:9,class:'fW'},s);
+    E('path',{d:`M${cx+30} ${cy} A30 30 0 ${t>4?1:0} 0 ${f2(cx+30*Math.cos(a))} ${f2(cy-30*Math.sin(a))}`,class:'fN sA','stroke-width':2.5},s);
+    E('text',{x:cx,y:282,'text-anchor':'middle','font-size':12,class:'m'},s,'1초마다 45° (π/4)씩 반시계로 돌아요');
+    $('#tv').textContent=vals[t];$('#ta').textContent=(t*45)+'° = '+rad[t];
+  }
+  sl.oninput=draw;draw();
+})();
+(function(){
+  function resp(id,passFn,label){
+    const s=$(id),L=20,Wd=260,B=130,H=85;
+    const X=f=>L+(f+1)/2*Wd;
+    E('line',{x1:L,y1:B,x2:L+Wd,y2:B,class:'sI','stroke-width':1.4},s);
+    let d=`M${X(-1)} ${B}`;const N=400;
+    for(let i=0;i<=N;i++){const f=-1+2*i/N;let fn=((f+0.5)%1+1)%1-0.5;const m=passFn(Math.abs(fn))?1:0;d+=' L'+f2(X(f))+' '+f2(B-m*H);}
+    d+=` L${X(1)} ${B} Z`;
+    E('path',{d,class:'fGs sG','stroke-width':2},s);
+    [[-1,'−Fs'],[-0.5,'−Nyq'],[0,'0'],[0.5,'Nyq'],[1,'Fs']].forEach(p=>{E('line',{x1:X(p[0]),y1:B,x2:X(p[0]),y2:B+5,class:'sI'},s);E('text',{x:X(p[0]),y:B+19,'text-anchor':'middle','font-size':11,class:'m'},s,p[1]);});
+    E('rect',{x:X(-0.5),y:20,width:Wd/2,height:B-20+1,class:'fN sM','stroke-dasharray':'3 3'},s);
+    E('text',{x:X(0),y:14,'text-anchor':'middle','font-size':11,class:'m'},s,'진짜 구간');
+    E('text',{x:X(0),y:B+38,'text-anchor':'middle','font-size':12,class:'g','font-weight':700},s,'초록 = 통과, 바닥 = 차단');
+  }
+  resp('#lp',f=>f<0.2);resp('#hp',f=>f>0.3);resp('#bp',f=>f>0.15&&f<0.3);
+  const s=$('#ruler');
+  const L=40,Wd=560,X=w=>L+w/(2*Math.PI)*Wd,Y=50;
+  E('line',{x1:L,y1:Y,x2:L+Wd,y2:Y,class:'sI','stroke-width':3},s);
+  E('rect',{x:L,y:Y-10,width:Wd/2,height:20,class:'fAs'},s);
+  E('text',{x:L+Wd/4,y:Y+4,'text-anchor':'middle','font-size':12,class:'a','font-weight':700},s,'0 ~ Nyquist (진짜 구간)');
+  [[0,'0','0'],[Math.PI/4,'π/4','Fs/8'],[Math.PI/2,'π/2','Fs/4'],[Math.PI,'π','Fs/2 (Nyquist)'],[2*Math.PI,'2π','Fs']].forEach(p=>{
+    E('line',{x1:X(p[0]),y1:Y-14,x2:X(p[0]),y2:Y+14,class:'sI','stroke-width':2},s);
+    E('text',{x:X(p[0]),y:Y-22,'text-anchor':p[0]===0?'start':p[0]>6?'end':'middle','font-size':14,'font-weight':700,class:'w'},s,p[1]);
+    E('text',{x:X(p[0]),y:Y+34,'text-anchor':p[0]===0?'start':p[0]>6?'end':'middle','font-size':12,class:'m'},s,p[2]);});
+  E('text',{x:L,y:112,'font-size':12,class:'m'},s,'위 줄: ω (라디안)   아래 줄: f (Hz)');
+})();
+
+/* ---------- 5장: 구조 ---------- */
+(function(){
+  const s=$('#firstruct');arrowDefs(s,'af','fI');
+  E('text',{x:14,y:36,'font-size':13},s,'x(k)');
+  const cx=[70,190,310,430,550];
+  E('line',{x1:40,y1:50,x2:590,y2:50,class:'sI','stroke-width':1.6},s);
+  cx.forEach((x,i)=>{
+    if(i>0){E('rect',{x:x-110,y:34,width:56,height:30,rx:5,class:'fC sM'},s);E('text',{x:x-82,y:54,'text-anchor':'middle','font-size':13},s,'z⁻¹');}
+    E('line',{x1:x,y1:50,x2:x,y2:88,class:'sI','stroke-width':1.6,'marker-end':'url(#af)'},s);
+    E('rect',{x:x-26,y:90,width:52,height:34,rx:17,class:'fWs sW','stroke-width':2},s);
+    E('text',{x:x,y:112,'text-anchor':'middle','font-size':14,'font-weight':700,class:'w'},s,'×C'+i);
+    E('line',{x1:x,y1:124,x2:x,y2:158,class:'sI','stroke-width':1.6},s);
+  });
+  E('line',{x1:70,y1:158,x2:550,y2:158,class:'sI','stroke-width':1.6},s);
+  E('rect',{x:300,y:158,width:60,height:30,rx:6,class:'fAs sA','stroke-width':2},s);
+  E('text',{x:330,y:178,'text-anchor':'middle','font-size':15,'font-weight':700,class:'a'},s,'Σ 더하기');
+  E('line',{x1:360,y1:173,x2:610,y2:173,class:'sI','stroke-width':1.6,'marker-end':'url(#af)'},s);
+  E('text',{x:560,y:200,'font-size':13},s,'y(k)');
+  E('text',{x:14,y:200,'font-size':12,class:'m'},s,'y(k) = C0·x(k) + C1·x(k−1) + … + C4·x(k−4)');
+})();
+
+/* ---------- 5장: 컨볼루션 슬라이더 ---------- */
+(function(){
+  const C=[1,3,5,3,1];let mode='ex';
+  const XS={0:-1,1:1,2:2,3:1,4:4,5:-1};
+  const getx=n=>mode==='ex'?(XS[n]||0):(n===0?1:0);
+  const s=$('#conv'),ob=$('#outbars'),sl=$('#ksl');
+  const nmin=-4,nmax=10,cw=40,X=n=>20+(n-nmin)*cw;
+  const yk=k=>{let t=0;for(let i=0;i<5;i++)t+=C[i]*getx(k-i);return t;};
+  function draw(){
+    const k=+sl.value;clear(s);$('#kval').textContent=k;
+    E('text',{x:20,y:14,'font-size':12,class:'m'},s,'입력 x (회색=0)');
+    for(let n=nmin;n<=nmax;n++){
+      const inw=n<=k&&n>=k-4;const v=getx(n);
+      E('rect',{x:X(n),y:20,width:cw-4,height:34,rx:6,class:inw?'fAs sA':'fC sL','stroke-width':inw?2.5:1},s);
+      E('text',{x:X(n)+(cw-4)/2,y:42,'text-anchor':'middle','font-size':15,'font-weight':inw?700:400,class:v===0?'m':''},s,v);
+      E('text',{x:X(n)+(cw-4)/2,y:68,'text-anchor':'middle','font-size':10,class:'m'},s,'x'+(n<0?'−'+(-n):n));
+    }
+    E('text',{x:20,y:92,'font-size':12,class:'m'},s,'계수 C (창 안에서 뒤집혀 놓여요: C0이 x(k) 아래)');
+    let parts=[],sum=0;
+    for(let i=0;i<5;i++){const n=k-i;
+      E('rect',{x:X(n),y:98,width:cw-4,height:34,rx:17,class:'fWs sW','stroke-width':2},s);
+      E('text',{x:X(n)+(cw-4)/2,y:120,'text-anchor':'middle','font-size':15,'font-weight':700,class:'w'},s,C[i]);
+      E('text',{x:X(n)+(cw-4)/2,y:146,'text-anchor':'middle','font-size':10,class:'m'},s,'C'+i);
+      const pr=C[i]*getx(n);sum+=pr;parts.push(pr);
+      E('line',{x1:X(n)+(cw-4)/2,y1:54,x2:X(n)+(cw-4)/2,y2:98,class:'sM','stroke-dasharray':'3 3'},s);
+      E('text',{x:X(n)+(cw-4)/2,y:176,'text-anchor':'middle','font-size':14,class:'g','font-weight':700},s,pr);
+    }
+    E('text',{x:20,y:166,'font-size':12,class:'m'},s,'곱한 값 (x × C)');
+    E('text',{x:20,y:214,'font-size':14},s,'합 y(k) =');
+    E('text',{x:104,y:214,'font-size':17,'font-weight':700,class:'a'},s,sum);
+    E('text',{x:20,y:238,'font-size':12,class:'m'},s,'입력 창에 걸린 5칸 × 계수 5개를 곱해 전부 더해요');
+    $('#csum').textContent='y('+k+') = '+parts.map(p=>p<0?'('+p+')':p).join(' + ')+' = '+sum;
+    // output bars
+    clear(ob);const vals=[];for(let kk=nmin;kk<=nmax;kk++)vals.push(yk(kk));
+    const mx=Math.max(5,...vals.map(Math.abs));const base=75,sc=60/mx;
+    E('line',{x1:20,y1:base,x2:620,y2:base,class:'sL'},ob);
+    E('text',{x:20,y:12,'font-size':12,class:'m'},ob,'지금까지의 출력 y (k 오른쪽은 아직 계산 전)');
+    for(let kk=nmin;kk<=nmax;kk++){const v=yk(kk),done=kk<=k;const h=v*sc;
+      if(done&&v!==0)E('rect',{x:X(kk)+6,y:h>0?base-h:base,width:cw-16,height:Math.abs(h),rx:3,class:kk===k?'fW':'fA'},ob);
+      if(done)E('text',{x:X(kk)+(cw-4)/2,y:v>=0?base-h-4:base-h+14,'text-anchor':'middle','font-size':12,class:kk===k?'w':''},ob,v);
+      E('text',{x:X(kk)+(cw-4)/2,y:146,'text-anchor':'middle','font-size':10,class:'m'},ob,'k='+kk);}
+  }
+  function setMode(m){mode=m;$('#inEx').setAttribute('aria-pressed',String(m==='ex'));$('#inImp').setAttribute('aria-pressed',String(m==='imp'));draw();}
+  $('#inEx').onclick=()=>setMode('ex');$('#inImp').onclick=()=>setMode('imp');
+  sl.oninput=draw;draw();
+})();
+
+/* ---------- 5장: 주파수 응답 곡선들 ---------- */
+(function(){
+  const host=$('#hplots');
+  const defs=[
+    {c:[1,1,1,1,1],t:'전부 1 (이동평균)',n:'저역통과'},
+    {c:[1,-1,1,-1,1],t:'+1, −1, +1, −1, +1',n:'고역통과'},
+    {c:[1,3,5,3,1],t:'예제 {1, 3, 5, 3, 1}',n:'저역통과',mark:true}];
+  defs.forEach(df=>{
+    const f=document.createElement('div');f.className='card';f.style.margin='0';
+    const s=document.createElementNS(NS,'svg');s.setAttribute('viewBox','0 0 300 190');s.setAttribute('role','img');s.setAttribute('aria-label',df.t+' 계수의 주파수 응답 크기 곡선');f.appendChild(s);
+    const cap=document.createElement('div');cap.style.fontSize='14px';cap.innerHTML='<b>'+df.n+'</b><br>'+df.t;f.appendChild(cap);host.appendChild(f);
+    const H=w=>{let re=0,im=0;df.c.forEach((c,i)=>{re+=c*Math.cos(w*i);im-=c*Math.sin(w*i);});return Math.hypot(re,im);};
+    const mx=Math.max(...Array.from({length:200},(_,i)=>H(Math.PI*i/199)));
+    const L=36,Wd=250,B=150,Ht=120,X=w=>L+w/Math.PI*Wd,Y=v=>B-v/mx*Ht;
+    E('line',{x1:L,y1:B,x2:L+Wd,y2:B,class:'sI'},s);E('line',{x1:L,y1:B,x2:L,y2:B-Ht-8,class:'sI'},s);
+    let d='';for(let i=0;i<=200;i++){const w=Math.PI*i/200;d+=(i?' L':'M')+f2(X(w))+' '+f2(Y(H(w)));}
+    E('path',{d:d+` L${X(Math.PI)} ${B} L${L} ${B} Z`,class:'fAs'},s);
+    E('path',{d,class:'fN sA','stroke-width':2.5},s);
+    [[0,'0'],[Math.PI/2,'π/2'],[Math.PI,'π']].forEach(p=>E('text',{x:X(p[0]),y:B+16,'text-anchor':'middle','font-size':12,class:'m'},s,p[1]));
+    E('text',{x:L+Wd/2,y:B+34,'text-anchor':'middle','font-size':11,class:'m'},s,'ω');
+    [0,Math.PI/2,Math.PI].forEach(w=>{const v=H(w);if(v<0.01)return;E('circle',{cx:X(w),cy:Y(v),r:5,class:'fW'},s);
+      E('text',{x:X(w)+(w===0?8:0),y:Y(v)-9,'text-anchor':w===0?'start':w===Math.PI?'end':'middle','font-size':13,'font-weight':700,class:'w'},s,Math.round(v*100)/100);});
+    if(df.mark===undefined){}
+  });
+})();
+
+/* ---------- 5장: sinc 계수 ---------- */
+(function(){
+  const s=$('#sinc'),L=30,cw=36,base=120;
+  E('line',{x1:20,y1:base,x2:620,y2:base,class:'sI'},s);
+  for(let i=-7;i<=7;i++){const v=i===0?0.5:Math.sin(Math.PI*i/2)/(Math.PI*i);const h=v*180,x=L+(i+7)*cw+ (640-30*2-15*cw)/2;
+    if(Math.abs(h)>0.5)E('rect',{x:x+8,y:h>0?base-h:base,width:cw-16,height:Math.abs(h),rx:3,class:v>=0?'fA':'fW'},s);
+    E('text',{x:x+cw/2,y:base+(h<0?-h:0)+16+(h<0?0:0),'text-anchor':'middle','font-size':11,class:'m'},s,'C'+(i<0?'−'+(-i):i).replace('C',''));
+    E('text',{x:x+cw/2,y:h>=0?base-h-6:base-h+14,'text-anchor':'middle','font-size':11,class:v>=0?'a':'w'},s,Math.abs(v)<1e-9?'0':v.toFixed(2));}
+})();
+
+/* ---------- 5장: 탭 수 비교 ---------- */
+(function(){
+  const s=$('#taps'),bar=$('#tapbtn');
+  const sets=[{n:7,cl:'sW'},{n:15,cl:'sG'},{n:63,cl:'sA'},{n:255,cl:'sB'}];
+  const on={7:true,15:true,63:false,255:true};
+  const dbmin=-80,L=50,Wd=570,T=14,Ht=250;
+  const X=w=>L+w/Math.PI*Wd,Y=d=>T+(-d)/(-dbmin)*Ht;
+  function cache(n){const M=(n-1)/2,h=[];for(let i=0;i<=M;i++)h.push(i===0?0.5:Math.sin(Math.PI*i/2)/(Math.PI*i));
+    return w=>{let t=h[0];for(let i=1;i<=M;i++)t+=2*h[i]*Math.cos(w*i);return t;};}
+  const fns={};sets.forEach(o=>fns[o.n]=cache(o.n));
+  function draw(){
+    clear(s);
+    for(let d=0;d>=dbmin;d-=20){E('line',{x1:L,y1:Y(d),x2:L+Wd,y2:Y(d),class:'sL'},s);E('text',{x:L-6,y:Y(d)+4,'text-anchor':'end','font-size':11,class:'m'},s,d+' dB');}
+    [[0,'0'],[Math.PI/4,'π/4'],[Math.PI/2,'π/2 (컷오프)'],[3*Math.PI/4,'3π/4'],[Math.PI,'π']].forEach(p=>E('text',{x:X(p[0]),y:T+Ht+18,'text-anchor':'middle','font-size':11,class:'m'},s,p[1]));
+    sets.forEach(o=>{if(!on[o.n])return;let d='';const N=700;
+      for(let i=0;i<=N;i++){const w=Math.PI*i/N;let v=Math.abs(fns[o.n](w));let db=v<1e-4?dbmin:20*Math.log10(v);if(db<dbmin)db=dbmin;if(db>6)db=6;d+=(i?' L':'M')+f2(X(w))+' '+f2(Y(db));}
+      E('path',{d,class:'fN '+o.cl,'stroke-width':o.n===255?1.6:2},s);});
+  }
+  sets.forEach(o=>{const b=document.createElement('button');b.className='chip';b.textContent=o.n+'탭';b.setAttribute('aria-pressed',String(on[o.n]));
+    b.style.borderBottom='4px solid var('+({sW:'--warm',sG:'--good',sA:'--accent',sB:'--bad'})[o.cl]+')';
+    b.onclick=()=>{on[o.n]=!on[o.n];b.setAttribute('aria-pressed',String(on[o.n]));draw();};bar.appendChild(b);});
+  draw();
+})();
+
+/* ---------- 5장: 달리기 비유 ---------- */
+(function(){
+  const s=$('#runners');arrowDefs(s,'arn','fI');
+  function row(y,title,delays,cls){
+    E('text',{x:14,y:y-30,'font-size':14,'font-weight':700,class:cls},s,title);
+    E('line',{x1:20,y1:y+22,x2:620,y2:y+22,class:'sL'},s);
+    delays.forEach((dl,i)=>{const x0=60+i*30;
+      E('circle',{cx:x0,cy:y-6,r:9,class:'fAs sM'},s);
+      E('circle',{cx:x0+dl*80,cy:y+8,r:9,class:cls==='g'?'fG':'fW'},s);
+      E('line',{x1:x0,y1:y+2,x2:x0+dl*80-10,y2:y+8,class:'sM','stroke-dasharray':'3 3'},s);});
+  }
+  E('text',{x:14,y:16,'font-size':12,class:'m'},s,'위쪽 회색 = 원래 대열, 아래쪽 색깔 = 늦게 도착한 대열');
+  row(70,'선형 위상: 모두 같은 시간만큼 늦음 → 모양 그대로',[1,1,1,1,1,1],'g');
+  row(165,'비선형 위상: 늦는 시간이 제각각 → 모양이 흐트러짐',[0.4,1.6,0.7,2,0.3,1.2],'w');
+})();
+
+/* ---------- IIR 구조 ---------- */
+(function(){
+  const s=$('#iirstruct');arrowDefs(s,'ai','fI');arrowDefs(s,'ab','fB');
+  function chain(y,fb){
+    E('text',{x:14,y:y-20,'font-size':14,'font-weight':700,class:fb?'b':'g'},s,fb?'IIR (피드백 있음)':'FIR (피드백 없음)');
+    E('text',{x:14,y:y+30,'font-size':13},s,'입력 x');
+    E('line',{x1:60,y1:y+26,x2:150,y2:y+26,class:'sI','stroke-width':1.8,'marker-end':'url(#ai)'},s);
+    E('rect',{x:152,y:y+8,width:130,height:36,rx:8,class:'fWs sW','stroke-width':2},s);
+    E('text',{x:217,y:y+31,'text-anchor':'middle','font-size':13,'font-weight':700,class:'w'},s,'지연 + 곱하기 C');
+    E('line',{x1:282,y1:y+26,x2:372,y2:y+26,class:'sI','stroke-width':1.8,'marker-end':'url(#ai)'},s);
+    E('circle',{cx:392,cy:y+26,r:20,class:'fAs sA','stroke-width':2},s);
+    E('text',{x:392,y:y+33,'text-anchor':'middle','font-size':20,'font-weight':700,class:'a'},s,'Σ');
+    E('line',{x1:412,y1:y+26,x2:540,y2:y+26,class:'sI','stroke-width':1.8,'marker-end':'url(#ai)'},s);
+    E('text',{x:546,y:y+31,'font-size':13},s,'출력 y');
+    if(fb){
+      E('line',{x1:470,y1:y+26,x2:470,y2:y+84,class:'sB','stroke-width':2.5},s);
+      E('rect',{x:330,y:y+66,width:130,height:36,rx:8,class:'fWs sB','stroke-width':2},s);
+      E('text',{x:395,y:y+89,'text-anchor':'middle','font-size':13,'font-weight':700,class:'b'},s,'지연 + 곱하기 D');
+      E('line',{x1:330,y1:y+84,x2:392,y2:y+84,class:'sB','stroke-width':2.5},s);
+      E('line',{x1:392,y1:y+84,x2:392,y2:y+49,class:'sB','stroke-width':2.5,'marker-end':'url(#ab)'},s);
+      E('line',{x1:470,y1:y+84,x2:460,y2:y+84,class:'sB','stroke-width':2.5},s);
+      E('text',{x:14,y:y+90,'font-size':12,class:'b'},s,'출력이 되돌아와 다시 곱해져 더해져요');
+    }
+  }
+  chain(40,false);chain(180,true);
+})();
+</script>
+
+</body>
+</html>
